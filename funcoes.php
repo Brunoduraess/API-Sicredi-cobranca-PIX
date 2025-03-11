@@ -114,3 +114,60 @@ function geraCobrancaPF($certFile, $keyFile, $chaveRecebedor, $cpfPagador, $nome
     return $retornoPix;
 
 }
+function geraCobrancaPJ($certFile, $keyFile, $chaveRecebedor, $cnpjPagador, $nomePagador, $valor, $descricao, $token)
+{
+    $curl = curl_init();
+
+    curl_setopt_array($curl, [
+        CURLOPT_URL => "https://api-pix.sicredi.com.br/api/v2/cob",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 30,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => "POST",
+        CURLOPT_POSTFIELDS => '{
+                    "calendario": {
+                        "expiracao": 43200
+                    },
+                    "devedor": {
+                        "cnpj": "' . $cnpjPagador . '",
+                        "nome": "' . $nomePagador . '"
+                    },
+                    "valor": {
+                        "original": "' . $valor . '",
+                        "modalidadeAlteracao": 0
+                    },
+                    "chave": "' . $chaveRecebedor . '",
+                    "solicitacaoPagador": "cotacao ' . $descricao . '",
+                    "infoAdicionais": [
+                        {
+                        "nome": "Serviço",
+                        "valor": "cotacao ' . $descricao . '"
+                        }
+                    ]
+                    }',
+        CURLOPT_HTTPHEADER => [
+            "Authorization: Bearer " . $token,
+            "Content-Type: application/json"
+        ],
+
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_SSLCERT => $certFile,
+        CURLOPT_SSLKEY => $keyFile
+    ]);
+
+    $response = curl_exec($curl);
+    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+    if ($httpcode === 201) {
+        $retornoPix = $response;
+    } else {
+        $retornoPix = "Erro ao gerar PIX PJ na API sicredi.";
+    }
+
+    curl_close($curl);
+
+    return $retornoPix;
+}
