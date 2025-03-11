@@ -55,3 +55,62 @@ function geraTxid()
 
     return $txid;
 }
+
+
+function geraCobrancaPF($certFile, $keyFile, $chaveRecebedor, $cpfPagador, $nomePagador, $valor, $descricao, $token, $txid)
+{
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => 'https://api-pix.sicredi.com.br/api/v2/cob/' . $txid . '',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => 'PUT',
+        CURLOPT_POSTFIELDS => '{
+        "calendario": {
+          "expiracao": 43200
+        },
+        "devedor": {
+          "cpf": "' . $cpfPagador . '",
+          "nome": "' . $nomePagador . '"
+        },
+        "valor": {
+          "original": "' . $valor . '"
+        },
+        "chave": "' . $chaveRecebedor . '",
+        "solicitacaoPagador": "' . $descricao . '",
+        "infoAdicionais": [
+          {
+            "nome": "Serviço",
+            "valor": "' . $descricao . '"
+          }
+        ]
+      }',
+        CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $token . ''
+        ),
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_SSLCERT => $certFile,
+        CURLOPT_SSLKEY => $keyFile
+    ));
+
+    $response = curl_exec($curl);
+    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+    if ($httpcode === 201) {
+        $retornoPix = $response;
+    } else {
+        $retornoPix = "Erro ao gerar PIX PF na API sicredi.";
+    }
+
+    curl_close($curl);
+
+    return $retornoPix;
+
+}
