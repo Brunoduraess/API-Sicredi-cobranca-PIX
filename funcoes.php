@@ -41,3 +41,17 @@ function geraAccessToken($certFile, $keyFile, $clientId, $clientSecret)
     return $result;
 
 }
+
+
+function geraTxid()
+{
+    $comprimento = rand(26, 35);
+
+    $caracteres = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+    for ($i = 0; $i < $comprimento; $i++) {
+        $txid .= $caracteres[rand(0, strlen($caracteres) - 1)];
+    }
+
+    return $txid;
+}
